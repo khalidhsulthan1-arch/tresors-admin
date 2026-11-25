@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>TRÉSORS Admin</title>
+<style>
+  :root{--black:#0b0b0b;--card:#211b12;--stroke:#3a2f1f;--gold:#d7ad59;--gold2:#e5bd70;--cream:#f4ebdd;--muted:#c6bbae;--danger:#e0705f;--ok:#7fc29b}
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--black);color:var(--cream);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+  [hidden]{display:none!important}
+  .serif{font-family:Georgia,"Times New Roman",serif}
+  .eyebrow{color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase}
+  button,input,select,textarea{font:inherit;color:inherit}
+  .btn{background:var(--gold);color:#111;border:0;border-radius:12px;padding:11px 18px;font-weight:700;cursor:pointer;min-height:44px}
+  .btn:hover{background:var(--gold2)}
+  .btn:disabled{opacity:.55;cursor:default}
+  .btn.ghost{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+  .btn.danger{background:transparent;color:var(--danger);border:1px solid var(--danger)}
+  .btn.small{padding:7px 12px;min-height:36px;font-size:13px;border-radius:10px}
+  .field{display:block;margin-bottom:14px}
+  .field span{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;letter-spacing:.04em}
+  input[type=text],input[type=email],input[type=password],input[type=number],input[type=search],select,textarea{width:100%;background:#15110b;border:1px solid var(--stroke);border-radius:12px;padding:12px 14px;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+  textarea{min-height:110px;resize:vertical}
+  select option{background:#15110b}
+
+  /* login + setup */
+  .center{min-height:100vh;display:grid;place-items:center;padding:24px}
+  .panel{width:100%;max-width:400px;background:var(--card);border:1px solid var(--stroke);border-radius:20px;padding:28px 24px}
+  .brand{font-size:28px;letter-spacing:.2em;color:var(--gold);font-weight:700;text-align:center}
+  .panel .eyebrow{text-align:center;margin:6px 0 24px}
+  .err{color:var(--danger);font-size:13px;min-height:18px;margin:0 0 10px}
+  .link{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:8px;width:100%;margin-top:6px;font-size:13px}
+  code{background:#15110b;border:1px solid var(--stroke);border-radius:6px;padding:1px 6px}
+
+  /* app */
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid var(--stroke);position:sticky;top:0;background:rgba(11,11,11,.94);backdrop-filter:blur(8px);z-index:5}
+  header .brand{text-align:left;font-size:20px}
+  .who{color:var(--muted);font-size:12px;max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  main{max-width:1100px;margin:0 auto;padding:20px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+  .stat{background:var(--card);border:1px solid var(--stroke);border-radius:14px;padding:12px 14px}
+  .stat b{display:block;font-size:22px;color:var(--gold)}
+  .stat small{color:var(--muted)}
+  .bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+  .bar input{flex:1 1 200px}
+  .bar select{flex:0 1 170px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+  .card{background:var(--card);border:1px solid var(--stroke);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+  .card img,.card .noimg{width:100%;aspect-ratio:1/1;object-fit:cover;background:#15110b;display:block}
+  .noimg{display:grid;place-items:center;color:var(--muted);font-size:12px}
+  .card .body{padding:12px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .card h3{margin:0;font-size:16px}
+  .tag{font-size:11px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase}
+  .price{font-weight:700;color:var(--gold2)}
+  .desc{color:var(--muted);font-size:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:8px}
+  .stock{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+  .stock input{accent-color:var(--gold);width:18px;height:18px}
+  .actions{display:flex;gap:8px;padding:0 14px 14px}
+  .actions .btn{flex:1}
+  .empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:48px 12px;border:1px dashed var(--stroke);border-radius:16px}
+  .soldout{color:var(--danger);font-size:12px}
+
+  /* editor */
+  dialog{background:var(--card);color:var(--cream);border:1px solid var(--stroke);border-radius:20px;padding:0;width:min(520px,94vw);max-height:92vh}
+  dialog::backdrop{background:rgba(0,0,0,.7)}
+  dialog form{padding:22px 20px;max-height:92vh;overflow:auto}
+  dialog h2{margin:0 0 16px;font-size:22px}
+  .photo{display:flex;gap:14px;align-items:center;margin-bottom:16px}
+  .photo .box{width:104px;height:104px;border-radius:14px;border:1px dashed var(--stroke);background:#15110b;display:grid;place-items:center;overflow:hidden;color:var(--muted);font-size:12px;text-align:center;flex:none}
+  .photo img{width:100%;height:100%;object-fit:cover}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .foot{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap}
+  .foot .btn{flex:1}
+  #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#15110b;border:1px solid var(--gold);padding:12px 18px;border-radius:12px;z-index:50;max-width:90vw}
+  #toast.bad{border-color:var(--danger);color:var(--danger)}
+</style>
+</head>
+<body>
+
+<!-- Shown only when the Firebase web config below hasn't been filled in -->
+<div id="setup" class="center" hidden>
+  <div class="panel">
+    <div class="brand serif">TRÉSORS</div>
+    <div class="eyebrow">Setup needed</div>
+    <p>Open <code>index.html</code> and paste your Firebase <b>Web app</b> <code>apiKey</code> and <code>appId</code> into <code>FIREBASE_CONFIG</code>. Steps are in <code>SETUP.md</code>.</p>
+  </div>
+</div>
+
+<!-- Login -->
+<div id="login" class="center">
+  <form id="loginForm" class="panel" autocomplete="on">
+    <div class="brand serif">TRÉSORS</div>
+    <div class="eyebrow">Admin dashboard</div>
+    <label class="field"><span>EMAIL</span><input id="email" type="email" autocomplete="username" required></label>
+    <label class="field"><span>PASSWORD</span><input id="password" type="password" autocomplete="current-password" required></label>
+    <p id="loginErr" class="err" role="alert"></p>
+    <button id="loginBtn" class="btn" style="width:100%">Sign in</button>
+    <button id="resetBtn" type="button" class="link">Forgot password?</button>
+  </form>
+</div>
+
+<!-- App -->
+<div id="app" hidden>
+  <header>
+    <div><div class="brand serif">TRÉSORS</div><div class="eyebrow">Admin</div></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span id="who" class="who"></span>
+      <button id="logout" class="btn ghost small">Sign out</button>
+    </div>
+  </header>
+  <main>
+    <div class="stats">
+      <div class="stat"><b id="sTotal">0</b><small>Products</small></div>
+      <div class="stat"><b id="sIn">0</b><small>In stock</small></div>
+      <div class="stat"><b id="sOut">0</b><small>Sold out</small></div>
+    </div>
+    <div class="bar">
+      <input id="search" type="search" placeholder="Search products…" aria-label="Search products">
+      <select id="filter" aria-label="Filter by category"></select>
+      <button id="addBtn" class="btn">+ Add product</button>
+    </div>
+    <div id="grid" class="grid"></div>
+  </main>
+</div>
+
+<!-- Add / edit -->
+<dialog id="editor">
+  <form id="form">
+    <h2 id="editorTitle" class="serif">Add product</h2>
+    <div class="photo">
+      <div class="box"><img id="preview" alt="" hidden><span id="ph">No photo</span></div>
+      <div>
+        <button type="button" id="pick" class="btn ghost small">Choose photo</button>
+        <input id="file" type="file" accept="image/*" hidden>
+        <div style="color:var(--muted);font-size:12px;margin-top:8px">Photos are resized automatically.</div>
+      </div>
+    </div>
+    <label class="field"><span>PRODUCT NAME</span><input id="fName" type="text" maxlength="120" required></label>
+    <div class="two">
+      <label class="field"><span>CATEGORY</span><select id="fCategory" required></select></label>
+      <label class="field"><span>PRICE</span><input id="fPrice" type="number" inputmode="decimal" min="0" step="any" required></label>
+    </div>
+    <label class="field"><span>DESCRIPTION</span><textarea id="fDesc" maxlength="2000" placeholder="Material, size, care, details…"></textarea></label>
+    <label class="stock" style="margin-bottom:16px"><input id="fStock" type="checkbox" checked> In stock</label>
+    <div class="foot">
+      <button type="button" id="cancel" class="btn ghost">Cancel</button>
+      <button type="submit" id="save" class="btn">Save product</button>
+    </div>
+    <div class="foot"><button type="button" id="del" class="btn danger" hidden>Delete product</button></div>
+  </form>
+</dialog>
+
+<div id="toast" hidden></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail }
+  from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+/* ===== 1. PASTE YOUR FIREBASE *WEB APP* CONFIG HERE (see SETUP.md) ===== */
+const FIREBASE_CONFIG = {
+  apiKey: "PASTE_WEB_API_KEY",
+  authDomain: "tresors-16f70.firebaseapp.com",
+  projectId: "tresors-16f70",
+  appId: "PASTE_WEB_APP_ID"
+};
+/* ===== 2. Shop settings (category keys must match the Android app) ===== */
+const CURRENCY = "Rs. ";
+const CATEGORIES = [["earrings","Earrings"],["necklaces","Necklaces"],["rings","Rings"],["bracelets","Bracelets"]];
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const catName = (k) => (CATEGORIES.find((c) => c[0] === k) || [k, k])[1];
+const money = (n) => CURRENCY + Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 });
+
+let toastTimer;
+function toast(msg, bad = false) {
+  const t = $("#toast");
+  t.textContent = msg; t.className = bad ? "bad" : ""; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 3500);
+}
+function friendly(err) {
+  const c = (err && err.code) || "";
+  if (c.includes("invalid-credential") || c.includes("wrong-password") || c.includes("user-not-found")) return "Email or password is incorrect.";
+  if (c.includes("invalid-email")) return "Please enter a valid email.";
+  if (c.includes("too-many-requests")) return "Too many attempts. Please wait a few minutes.";
+  if (c.includes("network")) return "No internet connection.";
+  if (c.includes("permission-denied")) return "This account isn’t allowed to change products.";
+  if (c.includes("unavailable")) return "Can’t reach the server. Check your internet.";
+  if (c.includes("api-key")) return "Firebase API key is not valid. Re-check FIREBASE_CONFIG.";
+  return "Something went wrong. Please try again.";
+}
+
+if (FIREBASE_CONFIG.apiKey.startsWith("PASTE") || FIREBASE_CONFIG.appId.startsWith("PASTE")) {
+  $("#login").hidden = true; $("#setup").hidden = false;
+  throw new Error("Firebase config not filled in");
+}
+
+const app = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let products = [];
+let unsub = null;
+let editing = null;      // product being edited, or null when adding
+let pendingImage = null; // base64 (no prefix) of a newly chosen photo
+
+/* ---------- category dropdowns ---------- */
+$("#filter").innerHTML = `<option value="">All categories</option>` + CATEGORIES.map(([k, n]) => `<option value="${k}">${n}</option>`).join("");
+$("#fCategory").innerHTML = CATEGORIES.map(([k, n]) => `<option value="${k}">${n}</option>`).join("");
+
+/* ---------- auth ---------- */
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    $("#login").hidden = true; $("#app").hidden = false; $("#who").textContent = user.email || "";
+    startListening();
+  } else {
+    if (unsub) { unsub(); unsub = null; }
+    products = []; $("#app").hidden = true; $("#login").hidden = false; $("#password").value = "";
+  }
+});
+
+$("#loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  $("#loginErr").textContent = ""; $("#loginBtn").disabled = true;
+  try { await signInWithEmailAndPassword(auth, $("#email").value.trim(), $("#password").value); }
+  catch (err) { $("#loginErr").textContent = friendly(err); }
+  finally { $("#loginBtn").disabled = false; }
+});
+$("#resetBtn").addEventListener("click", async () => {
+  const email = $("#email").value.trim();
+  if (!email) { $("#loginErr").textContent = "Enter your email above first."; return; }
+  try { await sendPasswordResetEmail(auth, email); $("#loginErr").textContent = ""; toast("Password reset email sent."); }
+  catch (err) { $("#loginErr").textContent = friendly(err); }
+});
+$("#logout").addEventListener("click", () => signOut(auth));
+
+/* ---------- live product list ---------- */
+function startListening() {
+  if (unsub) unsub();
+  unsub = onSnapshot(query(collection(db, "products"), orderBy("createdAt", "desc")),
+    (snap) => { products = snap.docs.map((d) => ({ id: d.id, ...d.data() })); render(); },
+    (err) => toast(friendly(err), true));
+}
+
+function render() {
+  const q = $("#search").value.trim().toLowerCase();
+  const cat = $("#filter").value;
+  const list = products.filter((p) =>
+    (!cat || p.category === cat) &&
+    (!q || (p.name || "").toLowerCase().includes(q) || (p.description || "").toLowerCase().includes(q)));
+
+  $("#sTotal").textContent = products.length;
+  $("#sIn").textContent = products.filter((p) => p.inStock !== false).length;
+  $("#sOut").textContent = products.filter((p) => p.inStock === false).length;
+
+  if (!list.length) {
+    $("#grid").innerHTML = `<div class="empty">${products.length ? "No products match your search." : "No products yet. Tap “+ Add product” to create your first one."}</div>`;
+    return;
+  }
+  $("#grid").innerHTML = list.map((p) => `
+    <article class="card" data-id="${esc(p.id)}">
+      ${p.image ? `<img src="data:image/jpeg;base64,${p.image}" alt="${esc(p.name)}" loading="lazy">` : `<div class="noimg">No photo</div>`}
+      <div class="body">
+        <span class="tag">${esc(catName(p.category))}</span>
+        <h3>${esc(p.name)}</h3>
+        <div class="price">${esc(money(p.price))}</div>
+        <div class="desc">${esc(p.description)}</div>
+        <div class="row">
+          <label class="stock"><input type="checkbox" data-act="stock" ${p.inStock === false ? "" : "checked"}> ${p.inStock === false ? '<span class="soldout">Sold out</span>' : "In stock"}</label>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn ghost small" data-act="edit">Edit</button>
+        <button class="btn danger small" data-act="delete">Delete</button>
+      </div>
+    </article>`).join("");
+}
+$("#search").addEventListener("input", render);
+$("#filter").addEventListener("change", render);
+
+$("#grid").addEventListener("click", async (e) => {
+  const btn = e.target.closest("[data-act]"); if (!btn) return;
+  const id = btn.closest(".card").dataset.id;
+  const p = products.find((x) => x.id === id); if (!p) return;
+  const act = btn.dataset.act;
+  if (act === "edit") openEditor(p);
+  if (act === "delete") removeProduct(p);
+  if (act === "stock") {
+    try { await updateDoc(doc(db, "products", id), { inStock: btn.checked, updatedAt: serverTimestamp() }); }
+    catch (err) { toast(friendly(err), true); render(); }
+  }
+});
+
+/* ---------- editor ---------- */
+function setPreview(b64) {
+  const has = !!b64;
+  $("#preview").hidden = !has; $("#ph").hidden = has;
+  if (has) $("#preview").src = "data:image/jpeg;base64," + b64;
+}
+function openEditor(p = null) {
+  editing = p; pendingImage = null; $("#file").value = "";
+  $("#editorTitle").textContent = p ? "Edit product" : "Add product";
+  $("#fName").value = p?.name || "";
+  $("#fCategory").value = p?.category || CATEGORIES[0][0];
+  $("#fPrice").value = p?.price ?? "";
+  $("#fDesc").value = p?.description || "";
+  $("#fStock").checked = p ? p.inStock !== false : true;
+  $("#del").hidden = !p;
+  setPreview(p?.image || "");
+  $("#editor").showModal();
+}
+$("#addBtn").addEventListener("click", () => openEditor(null));
+$("#cancel").addEventListener("click", () => $("#editor").close());
+$("#pick").addEventListener("click", () => $("#file").click());
+
+/* Resize + compress so each photo is small enough to store in Firestore (free plan, no Storage needed). */
+async function compressPhoto(file) {
+  const bmp = await createImageBitmap(file);
+  const MAX = 600;
+  const s = Math.min(1, MAX / Math.max(bmp.width, bmp.height));
+  const w = Math.max(1, Math.round(bmp.width * s)), h = Math.max(1, Math.round(bmp.height * s));
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h); ctx.drawImage(bmp, 0, 0, w, h);
+  let q = 0.82, url;
+  do { url = c.toDataURL("image/jpeg", q); q -= 0.08; } while (url.length > 300000 && q > 0.3);
+  return url.split(",")[1];
+}
+$("#file").addEventListener("change", async (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  try { pendingImage = await compressPhoto(f); setPreview(pendingImage); }
+  catch { pendingImage = null; toast("Couldn’t read that photo. Please use a JPG or PNG.", true); }
+});
+
+$("#form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const price = Number($("#fPrice").value);
+  if (!editing && !pendingImage) return toast("Please add a product photo.", true);
+  if (!Number.isFinite(price) || price < 0) return toast("Please enter a valid price.", true);
+
+  const data = {
+    name: $("#fName").value.trim(),
+    category: $("#fCategory").value,
+    price,
+    description: $("#fDesc").value.trim(),
+    inStock: $("#fStock").checked,
+    updatedAt: serverTimestamp()
+  };
+  if (pendingImage) data.image = pendingImage;
+
+  $("#save").disabled = true; $("#save").textContent = "Saving…";
+  try {
+    if (editing) await updateDoc(doc(db, "products", editing.id), data);
+    else await addDoc(collection(db, "products"), { ...data, createdAt: serverTimestamp() });
+    $("#editor").close(); toast("Product saved.");
+  } catch (err) { toast(friendly(err), true); }
+  finally { $("#save").disabled = false; $("#save").textContent = "Save product"; }
+});
+
+async function removeProduct(p) {
+  if (!confirm(`Delete “${p.name}”? This can’t be undone.`)) return;
+  try { await deleteDoc(doc(db, "products", p.id)); $("#editor").close(); toast("Product deleted."); }
+  catch (err) { toast(friendly(err), true); }
+}
+$("#del").addEventListener("click", () => editing && removeProduct(editing));
+</script>
+</body>
+</html>
